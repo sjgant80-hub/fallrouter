@@ -1,0 +1,116 @@
+# FallRouter · Docker stack
+# One command: docker compose up -d
+# Provides: fallrouter (Node router) + Ollama (local models)
+# Optional add: Qdrant for the vector-DB memory layer (uncomment)
+
+version: "3.9"
+
+networks:
+  fallrouter:
+    driver: bridge
+
+volumes:
+  ollama_models:
+    driver: local
+  fallrouter_data:
+    driver: local
+
+services:
+
+  # ─── FallRouter service ───────────────────────────────────────
+  router:
+    build:
+      context: ../service
+      dockerfile: ../docker/Dockerfile.router
+    container_name: fr_router
+    restart: unless-stopped
+    networks: [fallrouter]
+    ports:
+      - "127.0.0.1:4100:4100"
+    depends_on:
+      ollama:
+        condition: service_healthy
+    volumes:
+      - fallrouter_data:/data
+    environment:
+      FR_PORT: 4100
+      FR_HOST: 0.0.0.0
+      FR_MASTER_KEY: ${FR_MASTER_KEY:-sk-fallrouter-change-me}
+      FR_POLICY: ${FR_POLICY:-auto}
+      FR_LOCAL_URL: http://ollama:11434
+      FR_LOCAL_FEMTO: ${FR_LOCAL_FEMTO:-llama3.2:3b}
+      FR_LOCAL_NANO:  ${FR_LOCAL_NANO:-llama3.1:8b}
+      FR_LOCAL_MILLI: ${FR_LOCAL_MILLI:-llama3.1:70b}
+      FR_ANTHROPIC_KEY: ${FR_ANTHROPIC_KEY:-}
+      FR_ANTHROPIC_MODEL: ${FR_ANTHROPIC_MODEL:-claude-opus-4-8}
+      FR_OPENAI_KEY: ${FR_OPENAI_KEY:-}
+      FR_OPENAI_MODEL: ${FR_OPENAI_MODEL:-gpt-4o}
+      FR_DB: /data/fallrouter.db
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4100/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # ─── Ollama (LLM runtime) ─────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: fr_ollama
+    restart: unless-stopped
+    networks: [fallrouter]
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    environment:
+      OLLAMA_KEEP_ALIVE: 30m
+    # ─── GPU · uncomment if you have NVIDIA + nvidia-container-toolkit ──
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+  # ─── Ollama bootstrap · pulls the classifier + standard models ─
+  ollama_bootstrap:
+    image: ollama/ollama:latest
+    container_name: fr_ollama_bootstrap
+    depends_on:
+      ollama:
+        condition: service_healthy
+    networks: [fallrouter]
+    volumes:
+      - ollama_models:/root/.ollama
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: >
+      /bin/sh -c "
+      echo '[bootstrap] pulling femto (3B)...';
+      ollama pull ${FR_LOCAL_FEMTO:-llama3.2:3b} || true;
+      echo '[bootstrap] pulling nano (8B)...';
+      ollama pull ${FR_LOCAL_NANO:-llama3.1:8b} || true;
+      echo '[bootstrap] done. milli (70B) not pulled by default; add it manually if you have hardware.';
+      "
+    restart: "no"
+
+  # ─── Optional: Qdrant vector DB for the Client-tier memory layer ─
+  # Uncomment to enable persistent episodic memory.
+  #
+  # qdrant:
+  #   image: qdrant/qdrant:latest
+  #   container_name: fr_qdrant
+  #   restart: unless-stopped
+  #   networks: [fallrouter]
+  #   ports:
+  #     - "127.0.0.1:6333:6333"
+  #   volumes:
+  #     - fallrouter_data:/qdrant/storage

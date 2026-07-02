@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FallRouter · Sovereign Model Orchestrator Dashboard</title>
+<meta name="description" content="FallRouter sovereign dashboard. Live status, routing log, cost tracker, model manager. Single HTML file. Runs from file://.">
+<meta name="theme-color" content="#0b0a0f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230b0a0f'/%3E%3Ctext x='16' y='22' font-family='serif' font-size='18' fill='%23b8974a' text-anchor='middle'%3E%E2%97%8A%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ox:#8b1a1a;--ox2:#a12020;--brass:#b8974a;--brass2:#d4b366;
+  --cream:#c4bfb2;--creamL:#e8e4db;
+  --void:#0b0a0f;--void2:#14131a;--panel:#1a1922;--panel2:#22212c;
+  --line:#2a2934;--line2:#3a3846;
+  --ink:#e8e4db;--dim:#8a857a;--muted:#5a5750;
+  --green:#4a8a5a;--greenL:#8ce0a5;
+  --red:#c8402a;--redL:#f57b62;
+  --amber:#c8a02a;--amberL:#f5cf62;
+  --serif:'Libre Baskerville',Georgia,serif;
+  --sans:'DM Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:var(--sans);background:var(--void);color:var(--ink);font-size:14px;line-height:1.5;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;background-image:radial-gradient(circle at 15% 25%,rgba(139,26,26,.08),transparent 40%),radial-gradient(circle at 85% 75%,rgba(184,151,74,.06),transparent 45%);pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px}
+h1,h2,h3{font-family:var(--serif);font-weight:400;color:var(--creamL)}
+h1{font-size:1.7rem;margin-bottom:2px}
+h1 span{color:var(--brass);font-size:.72rem;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;margin-left:12px;vertical-align:middle}
+h2{font-size:1.1rem;color:var(--brass2);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--line);letter-spacing:-.005em}
+h3{font-size:.9rem;color:var(--creamL);margin-bottom:6px}
+.mono{font-family:var(--mono);font-size:.85em}
+a{color:var(--brass2);text-decoration:none}
+a:hover{color:var(--brass);text-decoration:underline}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--brass)}
+header .brand{display:flex;align-items:center;gap:12px}
+header .brand-mark{font-size:1.5rem;color:var(--brass)}
+header .connection{display:flex;gap:14px;align-items:center;font-family:var(--mono);font-size:.75rem;color:var(--dim)}
+header .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block;margin-right:6px;vertical-align:middle}
+header .dot.ok{background:var(--green);box-shadow:0 0 6px var(--greenL)}
+header .dot.err{background:var(--red);box-shadow:0 0 6px var(--redL)}
+header .dot.warn{background:var(--amber)}
+.settings-btn{padding:8px 14px;background:transparent;border:1px solid var(--line2);color:var(--dim);font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .15s}
+.settings-btn:hover{border-color:var(--brass);color:var(--brass)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:920px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:20px}
+.panel.wide{grid-column:span 2}
+@media(max-width:920px){.panel.wide{grid-column:span 1}}
+.status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.status-card{background:var(--void2);border:1px solid var(--line);padding:14px;border-radius:2px}
+.status-card h3{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+.status-card .val{font-family:var(--serif);font-size:1.2rem;color:var(--creamL);margin-bottom:4px}
+.status-card .val.ok{color:var(--greenL)}
+.status-card .val.err{color:var(--redL)}
+.status-card .val.warn{color:var(--amberL)}
+.status-card .detail{font-family:var(--mono);color:var(--muted);font-size:.7rem}
+.tabs{display:flex;gap:2px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+.tab{padding:10px 18px;background:transparent;border:none;color:var(--dim);font-family:var(--mono);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.tab.active{color:var(--brass);border-bottom-color:var(--brass)}
+.tab:hover:not(.active){color:var(--cream)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+table th{text-align:left;padding:8px 10px;background:var(--void2);color:var(--brass);font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600;border-bottom:1px solid var(--brass)}
+table td{padding:8px 10px;border-bottom:1px solid var(--line);color:var(--cream);font-family:var(--mono);font-size:.75rem;vertical-align:top}
+table td.tier{color:var(--brass2);font-weight:600}
+table td.leg-local{color:var(--greenL)}
+table td.leg-frontier{color:var(--amberL)}
+table td.leg-fallback{color:var(--redL)}
+.log-table{max-height:520px;overflow-y:auto;display:block}
+.savings{background:linear-gradient(135deg,var(--panel2),var(--panel));border:1px solid var(--brass);padding:24px;border-radius:3px;margin-bottom:16px}
+.savings h2{border:none;padding:0;margin-bottom:14px;color:var(--brass)}
+.savings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:20px}
+.savings-item{text-align:left}
+.savings-item small{display:block;font-family:var(--mono);color:var(--dim);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.savings-item .big{font-family:var(--serif);color:var(--creamL);font-size:1.6rem;line-height:1.1}
+.savings-item .big.brass{color:var(--brass2)}
+.savings-item .big.green{color:var(--greenL)}
+.policy-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.policy-btn{padding:8px 16px;background:transparent;border:1px solid var(--line2);color:var(--dim);font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .15s}
+.policy-btn.active{border-color:var(--brass);background:rgba(184,151,74,.1);color:var(--brass)}
+.policy-btn:hover:not(.active){border-color:var(--cream);color:var(--cream)}
+.setup-card{background:var(--void2);border:1px dashed var(--line2);border-radius:3px;padding:32px;text-align:center;margin-bottom:20px}
+.setup-card h2{border:none;color:var(--brass);margin-bottom:8px}
+.setup-card p{color:var(--dim);margin-bottom:18px;max-width:520px;margin-left:auto;margin-right:auto}
+.setup-card code{background:var(--panel);color:var(--brass2);padding:2px 6px;border-radius:2px;font-family:var(--mono);font-size:.85em}
+.settings-modal{position:fixed;inset:0;background:rgba(11,10,15,.9);backdrop-filter:blur(6px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.settings-modal.open{display:flex}
+.settings-modal .box{background:var(--panel);border:1px solid var(--brass);border-radius:3px;padding:30px;max-width:520px;width:100%;position:relative;max-height:90vh;overflow-y:auto}
+.settings-modal h2{border:none;padding:0;color:var(--brass);margin-bottom:16px}
+.settings-modal label{display:block;margin-bottom:14px}
+.settings-modal label small{display:block;font-family:var(--mono);color:var(--dim);font-size:.7rem;letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px}
+.settings-modal input{width:100%;padding:10px 12px;background:var(--void2);border:1px solid var(--line);color:var(--creamL);font-family:var(--mono);font-size:.85rem;border-radius:2px}
+.settings-modal input:focus{outline:none;border-color:var(--brass)}
+.settings-modal .close{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--dim);font-size:1.6rem;cursor:pointer;line-height:1}
+.settings-modal .close:hover{color:var(--brass)}
+.settings-modal .save{padding:12px 24px;background:var(--ox);color:var(--creamL);border:none;font-family:var(--sans);font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;margin-top:8px;width:100%}
+.settings-modal .save:hover{background:var(--ox2)}
+.settings-modal hr{border:none;border-top:1px solid var(--line);margin:20px 0}
+.settings-modal .hint{color:var(--muted);font-family:var(--mono);font-size:.72rem;margin-top:6px;line-height:1.5}
+.footer{margin-top:36px;padding-top:20px;border-top:1px solid var(--line);text-align:center;color:var(--muted);font-family:var(--mono);font-size:.72rem;letter-spacing:.05em}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="brand">
+    <span class="brand-mark">◊</span>
+    <div>
+      <h1>FallRouter <span>sovereign · v0.1</span></h1>
+      <div class="mono" style="color:var(--dim);font-size:.75rem" id="routerUrlDisplay"></div>
+    </div>
+  </div>
+  <div class="connection">
+    <span><span class="dot" id="dotService"></span>Service</span>
+    <span><span class="dot" id="dotLocal"></span>Local</span>
+    <span><span class="dot" id="dotAnthropic"></span>Anthropic</span>
+    <span><span class="dot" id="dotOpenAI"></span>OpenAI</span>
+    <button class="settings-btn" onclick="openSettings()">Settings</button>
+  </div>
+</header>
+
+<div id="setupWarning" class="setup-card" style="display:none">
+  <h2>Router service not reachable</h2>
+  <p>The dashboard is looking for a FallRouter service at <code id="setupUrl">http://localhost:4100</code>. Start it with <code>cd service &amp;&amp; npm install &amp;&amp; npm start</code>, or open Settings to point at a different URL.</p>
+  <button class="settings-btn" onclick="openSettings()">Configure connection</button>
+</div>
+
+<div id="mainContent" style="display:none">
+
+  <div class="savings">
+    <h2>Cost discipline · rolling 30 days</h2>
+    <div class="savings-grid">
+      <div class="savings-item"><small>Total requests routed</small><div class="big" id="statTotalReq">—</div></div>
+      <div class="savings-item"><small>Local (£0)</small><div class="big green" id="statLocalTokens">—</div></div>
+      <div class="savings-item"><small>Frontier (paid)</small><div class="big brass" id="statFrontierTokens">—</div></div>
+      <div class="savings-item"><small>Frontier spend</small><div class="big brass" id="statCost">$0.00</div></div>
+      <div class="savings-item"><small>Est. savings vs 100% frontier</small><div class="big green" id="statSavings">$0.00</div></div>
+      <div class="savings-item"><small>Fallback reroutes (auto)</small><div class="big" id="statReroutes">—</div></div>
+    </div>
+  </div>
+
+  <div class="panel wide" style="margin-bottom:16px">
+    <h2>Routing policy</h2>
+    <p class="mono" style="color:var(--dim);margin-bottom:12px">The router decides per-request unless you override.</p>
+    <div class="policy-row">
+      <button class="policy-btn" data-policy="auto" onclick="setPolicy('auto')">Auto (recommended)</button>
+      <button class="policy-btn" data-policy="always-local" onclick="setPolicy('always-local')">Always Local</button>
+      <button class="policy-btn" data-policy="always-frontier" onclick="setPolicy('always-frontier')">Always Frontier</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <h2>Local leg · configured models</h2>
+      <div class="status-grid">
+        <div class="status-card"><h3>Femto (3B)</h3><div class="val" id="localFemto">—</div><div class="detail">classify · route · yes/no</div></div>
+        <div class="status-card"><h3>Nano (8B)</h3><div class="val" id="localNano">—</div><div class="detail">write · explain · standard</div></div>
+        <div class="status-card"><h3>Milli (70B)</h3><div class="val" id="localMilli">—</div><div class="detail">deep reasoning</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Frontier leg · availability</h2>
+      <div class="status-grid">
+        <div class="status-card"><h3>Anthropic</h3><div class="val" id="frontAnth">—</div><div class="detail" id="frontAnthModel">— · advisor + milli</div></div>
+        <div class="status-card"><h3>OpenAI</h3><div class="val" id="frontOAI">—</div><div class="detail" id="frontOAIModel">— · fallback frontier</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel wide">
+    <div class="tabs">
+      <button class="tab active" data-tab="log" onclick="switchTab('log')">Routing Log</button>
+      <button class="tab" data-tab="test" onclick="switchTab('test')">Test Request</button>
+      <button class="tab" data-tab="audit" onclick="switchTab('audit')">Audit Verify</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-log">
+      <div class="log-table">
+        <table>
+          <thead>
+            <tr><th>time</th><th>tier</th><th>leg</th><th>model</th><th>latency</th><th>tokens</th><th>cost</th><th>reason</th></tr>
+          </thead>
+          <tbody id="logBody"><tr><td colspan="8" style="text-align:center;color:var(--dim);padding:30px">Loading routing log...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-test">
+      <p class="mono" style="color:var(--dim);margin-bottom:12px">Send a live request through the router. Shows which leg fired + why.</p>
+      <textarea id="testPrompt" placeholder="Ask anything · router picks the leg" style="width:100%;min-height:120px;padding:12px;background:var(--void2);border:1px solid var(--line);color:var(--creamL);font-family:var(--sans);font-size:.95rem;border-radius:2px;resize:vertical" rows="4">Explain the observer effect in one sentence.</textarea>
+      <div style="display:flex;gap:10px;margin-top:12px;align-items:center">
+        <button class="policy-btn active" onclick="sendTest()">Send</button>
+        <span class="mono" style="color:var(--dim);font-size:.75rem" id="testStatus">Ready.</span>
+      </div>
+      <pre id="testOut" class="mono" style="background:var(--void2);border:1px solid var(--line);padding:14px;margin-top:14px;border-radius:2px;font-size:.78rem;color:var(--cream);white-space:pre-wrap;max-height:340px;overflow-y:auto"></pre>
+    </div>
+
+    <div class="tab-panel" id="tab-audit">
+      <p class="mono" style="color:var(--dim);margin-bottom:12px">Every routing decision is chained via SHA-256. This verifies the last N entries are internally consistent.</p>
+      <button class="policy-btn active" onclick="verifyAudit()">Verify audit chain</button>
+      <pre id="auditOut" class="mono" style="background:var(--void2);border:1px solid var(--line);padding:14px;margin-top:14px;border-radius:2px;font-size:.78rem;color:var(--cream);white-space:pre-wrap;max-height:340px;overflow-y:auto"></pre>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  FallRouter v0.1 · sovereign model orchestrator · <a href="../">landing</a> · <a href="https://github.com/sjgant80-hub/fallrouter">source</a> · MIT · ◊·κ=1
+</div>
+
+</div>
+
+<!-- Settings modal -->
+<div class="settings-modal" id="settingsModal">
+  <div class="box">
+    <button class="close" onclick="closeSettings()">×</button>
+    <h2>Router connection</h2>
+    <label><small>Router service URL</small><input type="text" id="setUrl" placeholder="http://localhost:4100"></label>
+    <label><small>Master key (Authorization: Bearer &lt;key&gt;)</small><input type="password" id="setKey" placeholder="sk-..."></label>
+    <div class="hint">Both values are stored in your browser's IndexedDB. Nothing leaves this device. If you clear browser storage you'll need to re-enter them.</div>
+    <hr>
+    <h2 style="font-size:1rem">Quick setup guide</h2>
+    <div class="hint" style="text-align:left">
+      1. <code>cd fallrouter/service</code><br>
+      2. <code>cp .env.example .env</code> · set <code>FR_MASTER_KEY</code> to a random hex string<br>
+      3. <code>npm install &amp;&amp; npm start</code><br>
+      4. Paste that URL + master key here<br>
+      5. Done — dashboard shows live data from your router
+    </div>
+    <button class="save" onclick="saveSettings()">Save</button>
+  </div>
+</div>
+
+<script>
+// ────────────────────────────────────────────────────────────────
+// FallRouter dashboard · sovereign · single-file · IDB-persisted
+// ────────────────────────────────────────────────────────────────
+
+const DEFAULT_URL = 'http://localhost:4100';
+const DEFAULT_KEY = '';
+let CFG = { url: DEFAULT_URL, key: DEFAULT_KEY };
+
+// ─── IDB tiny wrapper ───────────────────────────────────────────
+const DB_NAME = 'fallrouter-dashboard';
+const STORE = 'kv';
+function idb() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open(DB_NAME, 1);
+    r.onupgradeneeded = () => r.result.createObjectStore(STORE);
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+async function idbGet(k) {
+  const db = await idb();
+  return new Promise((res) => {
+    const tx = db.transaction(STORE, 'readonly').objectStore(STORE).get(k);
+    tx.onsuccess = () => res(tx.result);
+    tx.onerror = () => res(undefined);
+  });
+}
+async function idbSet(k, v) {
+  const db = await idb();
+  return new Promise((res) => {
+    const tx = db.transaction(STORE, 'readwrite').objectStore(STORE).put(v, k);
+    tx.onsuccess = () => res();
+  });
+}
+
+async function loadConfig() {
+  CFG.url = (await idbGet('url')) || DEFAULT_URL;
+  CFG.key = (await idbGet('key')) || DEFAULT_KEY;
+  document.getElementById('setUrl').value = CFG.url;
+  document.getElementById('setKey').value = CFG.key;
+  document.getElementById('routerUrlDisplay').textContent = CFG.url;
+  document.getElementById('setupUrl').textContent = CFG.url;
+}
+
+// ─── UI actions ─────────────────────────────────────────────────
+function openSettings(){document.getElementById('settingsModal').classList.add('open')}
+function closeSettings(){document.getElementById('settingsModal').classList.remove('open')}
+async function saveSettings(){
+  CFG.url = document.getElementById('setUrl').value.trim() || DEFAULT_URL;
+  CFG.key = document.getElementById('setKey').value.trim();
+  await idbSet('url', CFG.url);
+  await idbSet('key', CFG.key);
+  document.getElementById('routerUrlDisplay').textContent = CFG.url;
+  closeSettings();
+  refresh();
+}
+
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
+}
+
+// ─── API calls ──────────────────────────────────────────────────
+async function api(path, opts = {}) {
+  const url = CFG.url.replace(/\/$/, '') + path;
+  const headers = { 'Content-Type': 'application/json' };
+  if (CFG.key) headers['Authorization'] = 'Bearer ' + CFG.key;
+  const resp = await fetch(url, { ...opts, headers: { ...headers, ...(opts.headers||{}) } });
+  if (!resp.ok) throw new Error(`${resp.status} ${await resp.text().catch(()=>resp.statusText)}`);
+  return resp.json();
+}
+
+// ─── periodic refresh ───────────────────────────────────────────
+async function refresh() {
+  try {
+    const status = await api('/status');
+    const cost   = await api('/cost');
+    const audit  = await api('/audit?limit=100');
+
+    // Service is reachable
+    document.getElementById('setupWarning').style.display = 'none';
+    document.getElementById('mainContent').style.display = 'block';
+    document.getElementById('dotService').className = 'dot ok';
+
+    // availability dots
+    document.getElementById('dotLocal').className = 'dot ' + (status.availability.local ? 'ok' : 'err');
+    const anthKey = !!status.models?.frontier?.anthropic;
+    const openKey = !!status.models?.frontier?.openai;
+    document.getElementById('dotAnthropic').className = 'dot ' + (!anthKey ? '' : status.availability.anthropic ? 'ok' : 'err');
+    document.getElementById('dotOpenAI').className    = 'dot ' + (!openKey ? '' : status.availability.openai ? 'ok' : 'err');
+
+    // model cards
+    document.getElementById('localFemto').textContent = status.models.local.femto;
+    document.getElementById('localNano').textContent  = status.models.local.nano;
+    document.getElementById('localMilli').textContent = status.models.local.milli;
+    document.getElementById('localFemto').className = 'val ' + (status.availability.local ? 'ok' : 'err');
+    document.getElementById('localNano').className  = 'val ' + (status.availability.local ? 'ok' : 'err');
+    document.getElementById('localMilli').className = 'val ' + (status.availability.local ? 'ok' : 'err');
+
+    document.getElementById('frontAnth').textContent = status.models.frontier.anthropic || '(no key)';
+    document.getElementById('frontOAI').textContent  = status.models.frontier.openai    || '(no key)';
+    document.getElementById('frontAnth').className = 'val ' + (!anthKey ? 'warn' : status.availability.anthropic ? 'ok' : 'err');
+    document.getElementById('frontOAI').className  = 'val ' + (!openKey ? 'warn' : status.availability.openai    ? 'ok' : 'err');
+    document.getElementById('frontAnthModel').textContent = 'advisor + milli' + (anthKey ? '' : ' · configure API key');
+    document.getElementById('frontOAIModel').textContent  = 'fallback frontier' + (openKey ? '' : ' · configure API key');
+
+    // policy buttons
+    document.querySelectorAll('.policy-btn[data-policy]').forEach(b => {
+      b.classList.toggle('active', b.dataset.policy === status.policy);
+    });
+
+    // cost tracker
+    document.getElementById('statTotalReq').textContent      = (cost.total_requests || 0).toLocaleString();
+    document.getElementById('statLocalTokens').textContent   = fmtTok(cost.local_tokens || 0);
+    document.getElementById('statFrontierTokens').textContent= fmtTok(cost.frontier_tokens || 0);
+    document.getElementById('statCost').textContent          = '$' + (cost.frontier_cost || 0).toFixed(2);
+    const total = (cost.local_tokens || 0) + (cost.frontier_tokens || 0);
+    // if 100% of total had gone to Anthropic Opus @ (15+75)/2 = 45/M average, estimate savings vs actual
+    const hypotheticalFullFrontier = (total / 1e6) * 45;
+    const savings = Math.max(0, hypotheticalFullFrontier - (cost.frontier_cost || 0));
+    document.getElementById('statSavings').textContent = '$' + savings.toFixed(2);
+    document.getElementById('statReroutes').textContent = cost.fallback_reroutes || 0;
+
+    // routing log
+    const logBody = document.getElementById('logBody');
+    if (audit.entries.length === 0) {
+      logBody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--dim);padding:30px">No requests routed yet. Send a test request from the tab above.</td></tr>';
+    } else {
+      logBody.innerHTML = audit.entries.map(e => {
+        const time = new Date(e.ts).toLocaleTimeString();
+        const cost = e.cost_usd > 0 ? '$' + e.cost_usd.toFixed(4) : '$0';
+        return `<tr>
+          <td>${time}</td>
+          <td class="tier">${e.task_tier}</td>
+          <td class="leg-${e.leg}">${e.leg}</td>
+          <td>${e.model_selected}</td>
+          <td>${e.latency_ms}ms</td>
+          <td>${e.tokens_in}+${e.tokens_out}</td>
+          <td>${cost}</td>
+          <td style="color:var(--dim);max-width:340px;white-space:normal">${e.reason || ''}</td>
+        </tr>`;
+      }).join('');
+    }
+
+  } catch (e) {
+    // Service unreachable
+    document.getElementById('dotService').className = 'dot err';
+    document.getElementById('mainContent').style.display = 'none';
+    document.getElementById('setupWarning').style.display = 'block';
+  }
+}
+
+function fmtTok(n) {
+  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n/1e3).toFixed(1) + 'k';
+  return n.toString();
+}
+
+// ─── policy switch ──────────────────────────────────────────────
+async function setPolicy(p) {
+  try {
+    await api('/policy', { method: 'POST', body: JSON.stringify({ policy: p }) });
+    refresh();
+  } catch (e) { alert('policy change failed: ' + e.message); }
+}
+
+// ─── test request ───────────────────────────────────────────────
+async function sendTest() {
+  const prompt = document.getElementById('testPrompt').value.trim();
+  const out = document.getElementById('testOut');
+  const st = document.getElementById('testStatus');
+  if (!prompt) { st.textContent = 'need a prompt'; return; }
+  st.textContent = 'sending...';
+  out.textContent = '';
+  const start = performance.now();
+  try {
+    const r = await api('/v1/chat/completions', {
+      method: 'POST',
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 400,
+      }),
+    });
+    const took = Math.round(performance.now() - start);
+    st.textContent = `${took}ms · ${r.model} · ${r.fallrouter?.leg}`;
+    out.textContent = JSON.stringify(r, null, 2);
+    setTimeout(refresh, 400);
+  } catch (e) {
+    st.textContent = 'error';
+    out.textContent = e.message;
+  }
+}
+
+// ─── audit chain verification ──────────────────────────────────
+async function verifyAudit() {
+  const out = document.getElementById('auditOut');
+  out.textContent = 'fetching audit chain...';
+  try {
+    const { entries } = await api('/audit?limit=1000');
+    // entries are DESCending; verify links in ASC order
+    const asc = [...entries].reverse();
+    let broken = 0, prev = 'GENESIS';
+    for (const e of asc) {
+      if (e.prev_hash && prev !== 'GENESIS' && e.prev_hash !== prev) broken++;
+      prev = e.hash;
+    }
+    const lines = [
+      `Entries verified: ${asc.length}`,
+      `Broken links: ${broken}`,
+      `Chain status: ${broken === 0 ? 'OK — tamper-free' : 'BROKEN — investigate'}`,
+      ``,
+      `Latest hash: ${entries[0]?.hash || '(none)'}`,
+      `Genesis:     ${asc[0]?.prev_hash || '(none)'}`,
+    ];
+    out.textContent = lines.join('\n');
+  } catch (e) { out.textContent = 'audit fetch failed: ' + e.message; }
+}
+
+// ─── boot ───────────────────────────────────────────────────────
+(async () => {
+  await loadConfig();
+  refresh();
+  setInterval(refresh, 5000);
+})();
+</script>
+</body>
+</html>

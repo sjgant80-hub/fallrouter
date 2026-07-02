@@ -1,0 +1,18 @@
+{
+  "name": "fallrouter-service",
+  "version": "0.1.0",
+  "description": "Sovereign model orchestrator · routes between local Ollama and frontier APIs · OpenAI-compatible endpoint",
+  "type": "module",
+  "main": "router.mjs",
+  "scripts": {
+    "start": "node router.mjs",
+    "dev": "node --watch router.mjs"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.3.0"
+  },
+  "license": "MIT",
+  "author": "Simon Gant · AI Native Solutions",
+  "repository": "https://github.com/sjgant80-hub/fallrouter",
+  "engines": { "node": ">=20" }
+}

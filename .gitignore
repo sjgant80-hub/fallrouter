@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+.env
+service/.env
+docker/.env
+service/fallrouter.db
+service/fallrouter.db-*
+*.log
