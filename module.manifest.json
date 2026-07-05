@@ -1,0 +1,18 @@
+{
+  "$schema": "https://sjgant80-hub.github.io/fallhub/modules/manifest.schema.json",
+  "name": "fallrouter",
+  "version": "1.0.0",
+  "publisher": "AI-Native Solutions",
+  "publisher_url": "https://www.ai-nativesolutions.com/",
+  "licence": "MIT",
+  "description": "Multi-LLM router · cost caps · fallback rails · latency-aware routing · upgrades BYOK core",
+  "provides": ["llm_routing","cost_caps","fallback_rails"],
+  "tools": [],
+  "kernel_extension": {},
+  "compatible_verticals": ["*"],
+  "requires": ["byok_adapter@>=1.0.0"],
+  "ui_surfaces": [],
+  "mit": true,
+  "konomi_seal": "◊·κ=1",
+  "estate": true
+}
