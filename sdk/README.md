@@ -15,16 +15,13 @@ import { FallRouter } from './fallrouter.js';
 ```javascript
 const fr = new FallRouter({
   url: 'http://localhost:4100',
-  key: 'sk-your-router-master-key',
-});
+  key: 'sk-your-router-master-key'});
 
 const r = await fr.chat.completions.create({
   messages: [
     { role: 'system', content: 'You are a concise assistant.' },
-    { role: 'user', content: 'Explain the observer effect.' },
-  ],
-  max_tokens: 200,
-});
+    { role: 'user', content: 'Explain the observer effect.' }],
+  max_tokens: 200});
 
 console.log(r.choices[0].message.content);
 console.log('routed via', r.fallrouter.leg, '→', r.model);
@@ -62,8 +59,7 @@ import { makeClaudeCompatible } from './fallrouter.js';
 
 const claude = makeClaudeCompatible({
   url: 'http://localhost:4100',
-  key: 'sk-your-router-master-key',
-});
+  key: 'sk-your-router-master-key'});
 
 // existing smbaios / buildBotPrompt / etc. code works unchanged
 const answer = await claude(messages, systemPrompt, 700);
@@ -78,13 +74,11 @@ import OpenAI from 'openai';
 
 const client = new OpenAI({
   baseURL: 'http://localhost:4100/v1',
-  apiKey:  'your-fallrouter-master-key',
-});
+  apiKey:  'your-fallrouter-master-key'});
 
 const r = await client.chat.completions.create({
   model: 'auto',                  // router picks — this is ignored
-  messages: [{ role: 'user', content: 'Hello' }],
-});
+  messages: [{ role: 'user', content: 'Hello' }]});
 ```
 
 The extra `fallrouter` block is present in `r.fallrouter` (leg, tier, latency, cost, audit hash).

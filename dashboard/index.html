@@ -136,10 +136,10 @@ table td.leg-fallback{color:var(--redL)}
     <h2>Cost discipline · rolling 30 days</h2>
     <div class="savings-grid">
       <div class="savings-item"><small>Total requests routed</small><div class="big" id="statTotalReq">—</div></div>
-      <div class="savings-item"><small>Local (£0)</small><div class="big green" id="statLocalTokens">—</div></div>
+      <div class="savings-item"><small>Local (TBA)</small><div class="big green" id="statLocalTokens">—</div></div>
       <div class="savings-item"><small>Frontier (paid)</small><div class="big brass" id="statFrontierTokens">—</div></div>
-      <div class="savings-item"><small>Frontier spend</small><div class="big brass" id="statCost">$0.00</div></div>
-      <div class="savings-item"><small>Est. savings vs 100% frontier</small><div class="big green" id="statSavings">$0.00</div></div>
+      <div class="savings-item"><small>Frontier spend</small><div class="big brass" id="statCost">TBA</div></div>
+      <div class="savings-item"><small>Est. savings vs 100% frontier</small><div class="big green" id="statSavings">TBA</div></div>
       <div class="savings-item"><small>Fallback reroutes (auto)</small><div class="big" id="statReroutes">—</div></div>
     </div>
   </div>
@@ -368,7 +368,7 @@ async function refresh() {
     } else {
       logBody.innerHTML = audit.entries.map(e => {
         const time = new Date(e.ts).toLocaleTimeString();
-        const cost = e.cost_usd > 0 ? '$' + e.cost_usd.toFixed(4) : '$0';
+        const cost = e.cost_usd > 0 ? '$' + e.cost_usd.toFixed(4) : 'TBA';
         return `<tr>
           <td>${time}</td>
           <td class="tier">${e.task_tier}</td>
@@ -418,9 +418,7 @@ async function sendTest() {
       method: 'POST',
       body: JSON.stringify({
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 400,
-      }),
-    });
+        max_tokens: 400})});
     const took = Math.round(performance.now() - start);
     st.textContent = `${took}ms · ${r.model} · ${r.fallrouter?.leg}`;
     out.textContent = JSON.stringify(r, null, 2);
@@ -450,8 +448,7 @@ async function verifyAudit() {
       `Chain status: ${broken === 0 ? 'OK — tamper-free' : 'BROKEN — investigate'}`,
       ``,
       `Latest hash: ${entries[0]?.hash || '(none)'}`,
-      `Genesis:     ${asc[0]?.prev_hash || '(none)'}`,
-    ];
+      `Genesis:     ${asc[0]?.prev_hash || '(none)'}`];
     out.textContent = lines.join('\n');
   } catch (e) { out.textContent = 'audit fetch failed: ' + e.message; }
 }

@@ -193,7 +193,7 @@ footer{border-top:1px solid var(--line);padding:36px 0 40px;color:var(--dim);fon
 <section class="hero container">
   <div class="eyebrow">◆ Sovereign model orchestrator · single-file dashboard · MIT</div>
   <h1>Your AI keeps working <em>when the API goes dark.</em></h1>
-  <p class="hero-sub">FallRouter is a sovereign kernel that routes every LLM request between your local Ollama models and frontier APIs (Claude · OpenAI · Gemini). When a provider hits rate limits, gets export-controlled, goes bankrupt, or has a three-week outage — your app doesn't. The local leg picks up automatically. Zero downtime. Zero dependency. Tamper-evident audit chain. £29/month replaces per-token API bills.</p>
+  <p class="hero-sub">FallRouter is a sovereign kernel that routes every LLM request between your local Ollama models and frontier APIs (Claude · OpenAI · Gemini). When a provider hits rate limits, gets export-controlled, goes bankrupt, or has a three-week outage — your app doesn't. The local leg picks up automatically. Zero downtime. Zero dependency. Tamper-evident audit chain. TBAnth replaces per-token API bills.</p>
   <div class="hero-ctas">
     <a href="#quickstart" class="btn btn-primary">Quick start · 5 min</a>
     <a href="dashboard/" class="btn btn-secondary">Open dashboard</a>
@@ -294,7 +294,7 @@ footer{border-top:1px solid var(--line);padding:36px 0 40px;color:var(--dim);fon
   <div class="container">
     <div class="section-head">
       <div>
-        <h4>Pricing</h4>
+        <h4>Access</h4>
         <h2>Three tiers. Start free.</h2>
       </div>
       <p>Sovereign tier is free forever · you download it, you run it, you own it. The paid tiers add convenience (managed configs, hosted dashboard, memory layer, priority support).</p>
@@ -304,7 +304,7 @@ footer{border-top:1px solid var(--line);padding:36px 0 40px;color:var(--dim);fon
       <div class="tier">
         <h3>Sovereign</h3>
         <div class="tier-desc">Everything. Free. Runs on your hardware.</div>
-        <div class="tier-price">£0 <small>/ forever</small></div>
+        <div class="tier-price">TBA <small>/ forever</small></div>
         <ul class="tier-features">
           <li>OpenAI-compatible router service</li>
           <li>Femto/nano/milli/advisor classifier</li>
@@ -321,7 +321,7 @@ footer{border-top:1px solid var(--line);padding:36px 0 40px;color:var(--dim);fon
       <div class="tier featured">
         <h3>Hybrid</h3>
         <div class="tier-desc">Adds managed frontier routing + priority reroute alerts.</div>
-        <div class="tier-price">£29 <small>/ month</small></div>
+        <div class="tier-price">TBA <small>/ month</small></div>
         <ul class="tier-features">
           <li>Everything in Sovereign</li>
           <li>Managed frontier API failover pool</li>
@@ -336,7 +336,7 @@ footer{border-top:1px solid var(--line);padding:36px 0 40px;color:var(--dim);fon
       <div class="tier">
         <h3>Client</h3>
         <div class="tier-desc">Persistent memory layer. Multi-model orchestration. White-label.</div>
-        <div class="tier-price">£199 <small>/ month</small></div>
+        <div class="tier-price">TBA <small>/ month</small></div>
         <ul class="tier-features">
           <li>Everything in Hybrid</li>
           <li>Vector-DB persistent memory (episodic + semantic)</li>
@@ -425,12 +425,12 @@ curl http://localhost:4100/v1/chat/completions \
     </div>
     <div class="faq-grid">
       <div class="faq-item"><div class="faq-q" onclick="this.parentNode.classList.toggle('open')">Why not just use LiteLLM?</div><div class="faq-a"><div class="faq-a-inner">LiteLLM is great · it's an API-to-API proxy. FallRouter adds three things LiteLLM doesn't: (1) local Ollama as a first-class routing target, (2) automatic tier-classification so the small model handles simple tasks and the big model handles hard ones, (3) tamper-evident audit chain. If you only ever talk to hosted APIs, LiteLLM is enough. If you want sovereignty, FallRouter is the delta.</div></div></div>
-      <div class="faq-item"><div class="faq-q" onclick="this.parentNode.classList.toggle('open')">Do I need a GPU?</div><div class="faq-a"><div class="faq-a-inner">For the femto (3B) model — no, modern CPUs handle it. For the nano (8B) — a modest GPU (~£450 for a 16GB card) or a beefy Mac / Apple Silicon works. For the milli (70B) — proper GPU or you offload that tier to the frontier. FallRouter's design lets you skip the milli-local entirely if you don't have hardware for it.</div></div></div>
+      <div class="faq-item"><div class="faq-q" onclick="this.parentNode.classList.toggle('open')">Do I need a GPU?</div><div class="faq-a"><div class="faq-a-inner">For the femto (3B) model — no, modern CPUs handle it. For the nano (8B) — a modest GPU (~TBA for a 16GB card) or a beefy Mac / Apple Silicon works. For the milli (70B) — proper GPU or you offload that tier to the frontier. FallRouter's design lets you skip the milli-local entirely if you don't have hardware for it.</div></div></div>
       <div class="faq-item"><div class="faq-q" onclick="this.parentNode.classList.toggle('open')">What's the "advisor" pattern?</div><div class="faq-a"><div class="faq-a-inner">Anthropic literally documents this: faster, lower-cost worker models can call a frontier model mid-task to check plans and evaluate outputs. FallRouter automates it. 90% of tokens stay local (free). The 10% that hit frontier are the ones where frontier quality actually matters — verifying, auditing, high-stakes client-facing checks. Result: ~90% cost reduction with minimal quality drop.</div></div></div>
       <div class="faq-item"><div class="faq-q" onclick="this.parentNode.classList.toggle('open')">Does it work with my existing OpenAI SDK code?</div><div class="faq-a"><div class="faq-a-inner">Yes — the router is OpenAI-compatible at the `/v1/chat/completions` endpoint. Point your existing OpenAI SDK at <code>http://localhost:4100/v1</code> with your master key. Zero code changes. The router transparently picks whether the actual call goes to Ollama, Anthropic, or OpenAI based on the classifier.</div></div></div>
       <div class="faq-item"><div class="faq-q" onclick="this.parentNode.classList.toggle('open')">How does the audit chain work?</div><div class="faq-a"><div class="faq-a-inner">Every routing decision writes a row to SQLite with a SHA-256 hash of {entry, previous hash}. Verifying the chain means walking the rows forward and confirming each row's `prev_hash` matches the previous row's `hash`. Any tamper (edit, delete, insert) breaks the chain visibly. The dashboard has a one-click "Verify chain" button.</div></div></div>
-      <div class="faq-item"><div class="faq-q" onclick="this.parentNode.classList.toggle('open')">Can I run this in Docker for a client?</div><div class="faq-a"><div class="faq-a-inner">Yes — `docker/docker-compose.yml` starts the router + Ollama + (optionally) a vector store. One `docker compose up -d` on the client's machine and they have sovereign AI infrastructure. This is exactly what the £500-£2000 Fiverr "sovereign AI setup" gigs sell.</div></div></div>
-      <div class="faq-item"><div class="faq-q" onclick="this.parentNode.classList.toggle('open')">How does this fit with FallEnterprise?</div><div class="faq-a"><div class="faq-a-inner">FallEnterprise is the productised transformation service (£20k-£200k engagements). FallRouter is the software runtime clients keep using after the engagement ends. FallEnterprise's Sovereign tier includes FallRouter as the routing kernel · they compose. FallRouter is also a standalone product for people who don't need consulting, just the router.</div></div></div>
+      <div class="faq-item"><div class="faq-q" onclick="this.parentNode.classList.toggle('open')">Can I run this in Docker for a client?</div><div class="faq-a"><div class="faq-a-inner">Yes — `docker/docker-compose.yml` starts the router + Ollama + (optionally) a vector store. One `docker compose up -d` on the client's machine and they have sovereign AI infrastructure. This is exactly what the TBA-TBA0 Fiverr "sovereign AI setup" gigs sell.</div></div></div>
+      <div class="faq-item"><div class="faq-q" onclick="this.parentNode.classList.toggle('open')">How does this fit with FallEnterprise?</div><div class="faq-a"><div class="faq-a-inner">FallEnterprise is the productised transformation service (TBA engagements). FallRouter is the software runtime clients keep using after the engagement ends. FallEnterprise's Sovereign tier includes FallRouter as the routing kernel · they compose. FallRouter is also a standalone product for people who don't need consulting, just the router.</div></div></div>
       <div class="faq-item"><div class="faq-q" onclick="this.parentNode.classList.toggle('open')">Where's the code?</div><div class="faq-a"><div class="faq-a-inner"><a href="https://github.com/sjgant80-hub/fallrouter">github.com/sjgant80-hub/fallrouter</a> · MIT · single-author. Fork it, modify it, run it, redistribute it. If you build something interesting on top, ping <a href="mailto:sjgant80@gmail.com">sjgant80@gmail.com</a> — always happy to link out.</div></div></div>
     </div>
   </div>

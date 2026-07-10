@@ -9,7 +9,7 @@ Node.js router that sits between your client apps and any LLM (local or frontier
 - Picks the cheapest leg that can serve it (local first, frontier if needed)
 - Automatically falls back to smallest local model if the primary leg fails
 - Logs every routing decision with a **tamper-evident SHA-256 audit chain** (SQLite)
-- Reports cost per request in USD (frontier only; local is £0)
+- Reports cost per request in USD (frontier only; local is TBA)
 
 ## Run it
 

@@ -93,13 +93,13 @@ The router pings every provider every 30s. When a preferred leg is unavailable a
 
 Every routing decision writes to a SQLite audit chain with SHA-256 prev-hash links. Verify the chain from the dashboard's Audit tab or via `sqlite3 fallrouter.db`.
 
-## Pricing tiers
+## Access tiers
 
 | | |
 |---|---|
 | **Sovereign** · Free forever | Everything in this repo · MIT · runs on your hardware |
-| **Hybrid** · £29/month | + managed frontier failover pool, reroute alerts, cost anomaly detection, email support |
-| **Client** · £199/month | + persistent memory (vector DB), multi-model orchestration, white-label dashboard, priority support |
+| **Hybrid** · TBAnth | + managed frontier failover pool, reroute alerts, cost anomaly detection, email support |
+| **Client** · TBAnth | + persistent memory (vector DB), multi-model orchestration, white-label dashboard, priority support |
 
 Sovereign is genuinely free forever · the paid tiers add convenience layers, not the core.
 
@@ -111,12 +111,10 @@ The router exposes an OpenAI-compatible `/v1/chat/completions` endpoint. You can
 import OpenAI from 'openai';
 const client = new OpenAI({
   baseURL: 'http://localhost:4100/v1',
-  apiKey:  process.env.FR_MASTER_KEY,
-});
+  apiKey:  process.env.FR_MASTER_KEY});
 const r = await client.chat.completions.create({
   model: 'auto',
-  messages: [{ role: 'user', content: 'Hello' }],
-});
+  messages: [{ role: 'user', content: 'Hello' }]});
 console.log(r.choices[0].message.content);
 console.log('routed via', r.fallrouter.leg, '→', r.model);
 ```
@@ -125,7 +123,7 @@ Or use the tiny bundled SDK (`sdk/fallrouter.js`) for streaming, health checks, 
 
 ## Composition with FallEnterprise
 
-- [FallEnterprise](https://sjgant80-hub.github.io/fallenterprise/) is the productised transformation service (£20k-£200k engagements)
+- [FallEnterprise](https://sjgant80-hub.github.io/fallenterprise/) is the productised transformation service (TBA engagements)
 - FallRouter is the runtime kernel clients keep using after the engagement ends
 - FallEnterprise's Sovereign tier includes FallRouter as its routing layer
 - FallRouter is also standalone for anyone who just needs the router
@@ -134,7 +132,7 @@ Or use the tiny bundled SDK (`sdk/fallrouter.js`) for streaming, health checks, 
 
 Three principles from the [ai-nativesolutions.com](https://www.ai-nativesolutions.com/) estate:
 
-1. **Sovereignty is structural, not marketing** — MIT + on-box + install-forever, not "£0/month"
+1. **Sovereignty is structural, not marketing** — MIT + on-box + install-forever, not "TBAnth"
 2. **Single practitioner delivery** — every line of code written by Simon Gant, personally
 3. **Every layer is optional but coherent** — dashboard, SDK, Docker, service — use one, all, or fork any
 
