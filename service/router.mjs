@@ -14,6 +14,7 @@ import { readFileSync, existsSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
+import { classify as kClassify, chooseLeg as kChooseLeg } from '../kernel.mjs';   // the gated routing kernel (witness-clean)
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -123,17 +124,9 @@ const audit = {
 
 // ─── task classifier (rule-based · sovereign · fast · deterministic) ──
 function classify(messages) {
+  // the gated kernel decides the tier — see ../kernel.mjs (witness-clean)
   const last = messages.at(-1)?.content || '';
-  const text = String(last).trim();
-  const len = text.length;
-  const hasCode = /```|def |function |class |import |const |let /.test(text);
-  const wantsCheck = cfg.advisor.fireOnKeywords.some(k => text.toLowerCase().includes(k));
-
-  if (wantsCheck) return { tier: 'advisor', reason: 'user requested check/verify/audit' };
-  if (hasCode && len > 300) return { tier: 'milli', reason: 'code + substantial length' };
-  if (len < 50) return { tier: 'femto', reason: 'short prompt · route/classify/yes-no' };
-  if (len < 500) return { tier: 'nano', reason: 'medium prompt · standard generation' };
-  return { tier: 'milli', reason: 'long prompt · deep reasoning' };
+  return kClassify(String(last), cfg.advisor.fireOnKeywords);
 }
 
 // ─── availability polling ────────────────────────────────────────
@@ -177,33 +170,8 @@ refreshAvailability();
 
 // ─── routing decision ────────────────────────────────────────────
 function chooseLeg(tier) {
-  // Policy override
-  if (cfg.policy === 'always-local') return { leg: 'local', reason: 'policy: always-local' };
-  if (cfg.policy === 'always-frontier') {
-    if (availability.anthropic) return { leg: 'frontier', provider: 'anthropic', reason: 'policy: always-frontier' };
-    if (availability.openai)    return { leg: 'frontier', provider: 'openai',    reason: 'policy: always-frontier' };
-    return { leg: 'fallback', reason: 'policy: always-frontier but none available · falling back' };
-  }
-  // Auto
-  if (tier === 'femto' || tier === 'nano') {
-    if (availability.local) return { leg: 'local', reason: `${tier} → local (sovereign default)` };
-    if (availability.anthropic) return { leg: 'frontier', provider: 'anthropic', reason: 'local down · frontier fallback' };
-    if (availability.openai) return { leg: 'frontier', provider: 'openai', reason: 'local down · frontier fallback' };
-    return { leg: 'fallback', reason: 'no legs available' };
-  }
-  if (tier === 'milli') {
-    if (availability.anthropic) return { leg: 'frontier', provider: 'anthropic', reason: 'milli → frontier for deep reasoning' };
-    if (availability.openai) return { leg: 'frontier', provider: 'openai', reason: 'milli → openai (anthropic unavailable)' };
-    if (availability.local) return { leg: 'local', reason: 'milli · frontier down · local best-effort' };
-    return { leg: 'fallback', reason: 'no legs available' };
-  }
-  if (tier === 'advisor') {
-    if (availability.anthropic) return { leg: 'frontier', provider: 'anthropic', reason: 'advisor pattern → Claude (specialty)' };
-    if (availability.openai) return { leg: 'frontier', provider: 'openai', reason: 'advisor · anthropic down' };
-    if (availability.local) return { leg: 'local', reason: 'advisor · frontier down · local best-effort' };
-    return { leg: 'fallback', reason: 'no legs available' };
-  }
-  return { leg: 'fallback', reason: 'unknown tier' };
+  // the gated kernel makes the local-first-then-frontier decision — see ../kernel.mjs (witness-clean)
+  return kChooseLeg(tier, availability, cfg.policy);
 }
 
 // ─── call: local (Ollama /api/chat) ──────────────────────────────

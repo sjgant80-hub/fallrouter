@@ -1,0 +1,12 @@
+[
+  {
+    "mutation": "< → <=",
+    "snippet": "for (let t = 16; t < 64; t++) {",
+    "reason": "Genuinely equivalent: the mutated bound runs one extra schedule iteration writing w[64], out of bounds on the fixed Uint32Array(64) — typed-array OOB writes are discarded, the loop body has no other effect, and nothing reads past w[63]. Bit-identical output; FIPS SHA-256 vectors pass either way."
+  },
+  {
+    "mutation": "|| → &&",
+    "snippet": "if (!isObj(item) || !isStr(item.hash) || !isStr(item.prevHash) || !isObj(item.entry)) retu",
+    "reason": "Genuinely equivalent (the middle || variant): differs only when exactly ONE of item.hash / item.prevHash is a non-string, and both are shadowed by the strict recomputation below — a non-string hash cannot strictly equal the recomputed primitive-string hash, and a non-string prevHash cannot equal expectedPrev (GENESIS or a prior primitive-string hash). The killable outer clauses (an array item with an honest hash, a string entry with an honest hash) are killed by the suite."
+  }
+]
