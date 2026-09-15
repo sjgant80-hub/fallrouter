@@ -38,7 +38,7 @@ jobs:
             const s=fs.readFileSync(f,'utf8');
 
             // 1. every inline script must parse. A syntax error means the page loads and does nothing.
-            const blocks=[...s.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)];
+            const blocks=[...s.matchAll(/<script(?![^>]*\bsrc=)(?![^>]*application\/(?:ld\+)?json)[^>]*>([\s\S]*?)<\/script>/g)];
             blocks.forEach((m,i)=>{
               try { new (require('vm').Script)(m[1].replace(/^\s*import\s.*$/gm,'').replace(/^\s*export\s/gm,'')); }
               catch(e){ if(!/await is only valid|Unexpected token 'export'|Cannot use import/.test(e.message)){ console.error(f+' script['+i+'] DOES NOT PARSE: '+e.message); fail=1; } }
